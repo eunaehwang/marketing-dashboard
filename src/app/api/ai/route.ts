@@ -18,32 +18,42 @@ const SYSTEM_PROMPT = `당신은 한국 마케터를 위한 AI 기획 어시스�
 - 마케팅 전문 용어보다 실무에서 바로 쓸 수 있는 표현을 사용합니다`;
 
 export async function POST(req: NextRequest) {
-  const { messages, systemPrompt, model } = await req.json();
+  try {
+    const { messages, systemPrompt, model } = await req.json();
 
-  const stream = await client.messages.stream({
-    model: model ?? "claude-haiku-5-5",
-    max_tokens: 1500,
-    system: systemPrompt ?? SYSTEM_PROMPT,
-    messages,
-  });
+    const stream = await client.messages.stream({
+      model: model ?? "claude-haiku-3-5",
+      max_tokens: 1500,
+      system: systemPrompt ?? SYSTEM_PROMPT,
+      messages,
+    });
 
-  const encoder = new TextEncoder();
+    const encoder = new TextEncoder();
 
-  const readable = new ReadableStream({
-    async start(controller) {
-      for await (const event of stream) {
-        if (
-          event.type === "content_block_delta" &&
-          event.delta.type === "text_delta"
-        ) {
-          controller.enqueue(encoder.encode(event.delta.text));
+    const readable = new ReadableStream({
+      async start(controller) {
+        try {
+          for await (const event of stream) {
+            if (
+              event.type === "content_block_delta" &&
+              event.delta.type === "text_delta"
+            ) {
+              controller.enqueue(encoder.encode(event.delta.text));
+            }
+          }
+        } catch (err) {
+          controller.error(err);
+        } finally {
+          controller.close();
         }
-      }
-      controller.close();
-    },
-  });
+      },
+    });
 
-  return new Response(readable, {
-    headers: { "Content-Type": "text/plain; charset=utf-8" },
-  });
+    return new Response(readable, {
+      headers: { "Content-Type": "text/plain; charset=utf-8" },
+    });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    return Response.json({ error: message }, { status: 500 });
+  }
 }
