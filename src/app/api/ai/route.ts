@@ -41,10 +41,9 @@ export async function POST(req: NextRequest) {
               controller.enqueue(encoder.encode(event.delta.text));
             }
           }
+          controller.close();
         } catch (err) {
           controller.error(err);
-        } finally {
-          controller.close();
         }
       },
     });
