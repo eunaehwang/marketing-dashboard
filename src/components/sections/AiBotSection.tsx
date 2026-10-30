@@ -292,6 +292,17 @@ ${trendStr}
 
   return (
     <div>
+      {/* Persistent error box */}
+      {errorMsg && (
+        <div
+          className="rounded-lg px-4 py-3 text-xs mb-4 font-mono break-all"
+          style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.3)", color: "#EF4444" }}
+        >
+          <div className="font-bold mb-1">⚠ 오류 (Vercel Logs에서 상세 확인 가능)</div>
+          {errorMsg}
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
         <div>
@@ -314,16 +325,6 @@ ${trendStr}
           {loading ? "생성 중..." : "오늘 기획 생성"}
         </button>
       </div>
-
-      {/* Error message */}
-      {errorMsg && (
-        <div
-          className="rounded-lg px-4 py-3 text-xs mb-4 font-mono break-all"
-          style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.3)", color: "#EF4444" }}
-        >
-          <span className="font-bold">오류: </span>{errorMsg}
-        </div>
-      )}
 
       {/* Trend strip */}
       <div className="flex items-center gap-2 flex-wrap mb-4">

@@ -52,7 +52,9 @@ export async function POST(req: NextRequest) {
       headers: { "Content-Type": "text/plain; charset=utf-8" },
     });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    return Response.json({ error: message }, { status: 500 });
+    const message = err instanceof Error ? err.message : String(err);
+    const status = (err as { status?: number })?.status ?? 500;
+    console.error("[/api/ai error]", { status, message, err });
+    return Response.json({ error: `[${status}] ${message}` }, { status: 500 });
   }
 }
