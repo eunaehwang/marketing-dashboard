@@ -67,7 +67,7 @@ export default function AiBotSection() {
   const [hasApiKey, setHasApiKey] = useState<boolean | null>(null);
   const [toast, setToast] = useState("");
   const [toastVisible, setToastVisible] = useState(false);
-  const toastTimer = useRef<ReturnType<typeof setTimeout>>();
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
     try {
@@ -339,11 +339,10 @@ ${trendStr}
             className="px-4 py-2 text-xs font-bold transition-colors"
             style={{
               color: tab === t ? "var(--accent)" : "var(--fg-3)",
-              borderBottom: `2px solid ${tab === t ? "var(--accent)" : "transparent"}`,
+              borderBottom: tab === t ? "2px solid var(--accent)" : "2px solid transparent",
               marginBottom: -1,
               background: "transparent",
               border: "none",
-              borderBottom: tab === t ? "2px solid var(--accent)" : "2px solid transparent",
               cursor: "pointer",
             }}
           >
