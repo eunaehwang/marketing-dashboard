@@ -18,12 +18,12 @@ const SYSTEM_PROMPT = `당신은 한국 마케터를 위한 AI 기획 어시스�
 - 마케팅 전문 용어보다 실무에서 바로 쓸 수 있는 표현을 사용합니다`;
 
 export async function POST(req: NextRequest) {
-  const { messages } = await req.json();
+  const { messages, systemPrompt, model } = await req.json();
 
   const stream = await client.messages.stream({
-    model: "claude-opus-5-5",
-    max_tokens: 2048,
-    system: SYSTEM_PROMPT,
+    model: model ?? "claude-haiku-5-5",
+    max_tokens: 1500,
+    system: systemPrompt ?? SYSTEM_PROMPT,
     messages,
   });
 
