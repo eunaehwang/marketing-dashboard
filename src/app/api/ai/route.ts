@@ -1,6 +1,8 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest } from "next/server";
 
+export const maxDuration = 60;
+
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 const SYSTEM_PROMPT = `당신은 한국 마케터를 위한 AI 기획 어시스턴트입니다.
