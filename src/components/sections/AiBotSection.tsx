@@ -65,6 +65,7 @@ export default function AiBotSection() {
   const [history, setHistory] = useState<FeedbackItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasApiKey, setHasApiKey] = useState<boolean | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [toast, setToast] = useState("");
   const [toastVisible, setToastVisible] = useState(false);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -102,6 +103,7 @@ export default function AiBotSection() {
   const generate = async () => {
     if (loading) return;
     setLoading(true);
+    setErrorMsg(null);
     try {
       let brandInfo = "브랜드 정보 없음 (브랜드 프로필 먼저 입력 필요)";
       try {
@@ -200,7 +202,9 @@ ${trendStr}
       showToast("✦ 오늘 기획 3개 생성됐어요");
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "알 수 없는 오류";
-      showToast(`오류: ${msg}`);
+      console.error("[AI generate error]", msg);
+      setErrorMsg(msg);
+      showToast(`오류 발생 (아래 메시지 확인)`);
     } finally {
       setLoading(false);
     }
@@ -310,6 +314,16 @@ ${trendStr}
           {loading ? "생성 중..." : "오늘 기획 생성"}
         </button>
       </div>
+
+      {/* Error message */}
+      {errorMsg && (
+        <div
+          className="rounded-lg px-4 py-3 text-xs mb-4 font-mono break-all"
+          style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.3)", color: "#EF4444" }}
+        >
+          <span className="font-bold">오류: </span>{errorMsg}
+        </div>
+      )}
 
       {/* Trend strip */}
       <div className="flex items-center gap-2 flex-wrap mb-4">
