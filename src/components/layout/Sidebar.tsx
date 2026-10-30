@@ -10,6 +10,7 @@ const navItems: { id: Section; label: string; icon: string; group: "분석" | "�
   { id: "competitor",  label: "경쟁사 분석", icon: "people",   group: "분석" },
   { id: "calendar",    label: "날짜 체크",  icon: "calendar", group: "도구" },
   { id: "aibot",       label: "AI 기획봇",  icon: "bot",      group: "도구" },
+  { id: "brand",       label: "브랜드 프로필", icon: "brand",  group: "도구" },
 ];
 
 const Icon = ({ name }: { name: string }) => {
@@ -21,6 +22,7 @@ const Icon = ({ name }: { name: string }) => {
     people: <><circle cx="8" cy="5" r="2.5" fill="none" strokeWidth="1.5"/><path d="M3 13c0-2.8 2.2-5 5-5s5 2.2 5 5" fill="none" strokeWidth="1.5"/></>,
     calendar: <><rect x="1.5" y="3" width="13" height="12" rx="1.5" fill="none" strokeWidth="1.5"/><path d="M5 1.5v3M11 1.5v3M1.5 7h13" fill="none" strokeWidth="1.5"/></>,
     bot: <><rect x="3" y="4" width="10" height="8" rx="2" fill="none" strokeWidth="1.5"/><path d="M6 1.5v2.5M10 1.5v2.5M5.5 9h5M5.5 11h3" fill="none" strokeWidth="1.5"/></>,
+    brand: <><path d="M8 2l1.8 3.6L14 6.3l-3 2.9.7 4.1L8 11.3l-3.7 1.9.7-4.1-3-2.9 4.2-.7z" fill="none" strokeWidth="1.5"/></>,
   };
   return (
     <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor" stroke="currentColor">

@@ -6,6 +6,7 @@ import OverviewSection from "@/components/sections/OverviewSection";
 import KeywordSection from "@/components/sections/KeywordSection";
 import PlaceholderSection from "@/components/sections/PlaceholderSection";
 import AiBotSection from "@/components/sections/AiBotSection";
+import BrandSection from "@/components/sections/BrandSection";
 import { Section } from "@/types";
 
 const placeholders: Partial<Record<Section, { title: string; subtitle: string; description: string }>> = {
@@ -18,9 +19,9 @@ const placeholders: Partial<Record<Section, { title: string; subtitle: string; d
 const mobileNavItems: { id: Section; label: string }[] = [
   { id: "overview",   label: "요약" },
   { id: "keyword",    label: "키워드" },
-  { id: "trend",      label: "트렌드" },
-  { id: "calendar",   label: "일정" },
+  { id: "brand",      label: "브랜드" },
   { id: "aibot",      label: "AI봇" },
+  { id: "calendar",   label: "일정" },
 ];
 
 export default function Dashboard() {
@@ -30,6 +31,7 @@ export default function Dashboard() {
     if (activeSection === "overview") return <OverviewSection />;
     if (activeSection === "keyword") return <KeywordSection />;
     if (activeSection === "aibot") return <AiBotSection />;
+    if (activeSection === "brand") return <BrandSection />;
     const p = placeholders[activeSection];
     if (p) return <PlaceholderSection {...p} />;
     return null;
