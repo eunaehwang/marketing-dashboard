@@ -162,7 +162,14 @@ ${trendStr}
         }),
       });
 
-      if (!res.ok) throw new Error("API error");
+      if (!res.ok) {
+        let errMsg = `API error (${res.status})`;
+        try {
+          const errBody = await res.json();
+          if (errBody?.error) errMsg = errBody.error;
+        } catch {}
+        throw new Error(errMsg);
+      }
 
       const reader = res.body!.getReader();
       const decoder = new TextDecoder();
@@ -174,7 +181,7 @@ ${trendStr}
       }
 
       const match = text.match(/\[[\s\S]*\]/);
-      if (!match) throw new Error("JSON parse failed");
+      if (!match) throw new Error(`JSON parse failed. Response: ${text.slice(0, 200)}`);
 
       const parsed: Omit<Suggestion, "id">[] = JSON.parse(match[0]);
       const withIds: Suggestion[] = parsed.map((s, i) => ({
@@ -191,8 +198,9 @@ ${trendStr}
         );
       } catch {}
       showToast("✦ 오늘 기획 3개 생성됐어요");
-    } catch {
-      showToast("생성 중 오류가 발생했어요. 다시 시도해주세요.");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "알 수 없는 오류";
+      showToast(`오류: ${msg}`);
     } finally {
       setLoading(false);
     }
