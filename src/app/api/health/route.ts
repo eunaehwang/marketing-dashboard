@@ -1,4 +1,10 @@
 export async function GET() {
-  const hasKey = !!process.env.ANTHROPIC_API_KEY;
-  return Response.json({ ok: hasKey }, { status: hasKey ? 200 : 503 });
+  return Response.json({
+    anthropic: !!process.env.ANTHROPIC_API_KEY,
+    naverAd: !!(
+      process.env.NAVER_AD_CUSTOMER_ID &&
+      process.env.NAVER_AD_API_KEY &&
+      process.env.NAVER_AD_SECRET_KEY
+    ),
+  });
 }

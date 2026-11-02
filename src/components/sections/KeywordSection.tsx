@@ -54,8 +54,9 @@ export default function KeywordSection() {
       }
     } catch {}
 
-    fetch("/api/naver-keyword?keyword=올샌딩")
-      .then((r) => setHasApiKey(r.status !== 503))
+    fetch("/api/health")
+      .then((r) => r.json())
+      .then((d) => setHasApiKey(!!d.naverAd))
       .catch(() => setHasApiKey(false));
   }, []);
 

@@ -89,7 +89,8 @@ export default function AiBotSection() {
     } catch {}
 
     fetch("/api/health")
-      .then((r) => setHasApiKey(r.ok))
+      .then((r) => r.json())
+      .then((d) => setHasApiKey(!!d.anthropic))
       .catch(() => setHasApiKey(false));
   }, []);
 
