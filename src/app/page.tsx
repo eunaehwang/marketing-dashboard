@@ -5,12 +5,12 @@ import Sidebar from "@/components/layout/Sidebar";
 import OverviewSection from "@/components/sections/OverviewSection";
 import KeywordSection from "@/components/sections/KeywordSection";
 import PlaceholderSection from "@/components/sections/PlaceholderSection";
+import TrendSection from "@/components/sections/TrendSection";
 import AiBotSection from "@/components/sections/AiBotSection";
 import BrandSection from "@/components/sections/BrandSection";
 import { Section } from "@/types";
 
 const placeholders: Partial<Record<Section, { title: string; subtitle: string; description: string }>> = {
-  trend:      { title: "트렌드 분석",  subtitle: "네이버 데이터랩 API 기반",  description: "네이버 데이터랩 API 연결 후 활성화됩니다." },
   reviews:    { title: "후기 분석",   subtitle: "자사 리뷰 데이터 기반",      description: "리뷰 데이터 소스 연결 후 활성화됩니다." },
   competitor: { title: "경쟁사 분석", subtitle: "검색 점유율 기준",           description: "경쟁사 키워드 설정 후 활성화됩니다." },
   calendar:   { title: "날짜 체크",   subtitle: "캠페인 · 콘텐츠 일정 관리",  description: "일정 관리 기능이 곧 추가됩니다." },
@@ -30,6 +30,7 @@ export default function Dashboard() {
   const renderSection = () => {
     if (activeSection === "overview") return <OverviewSection />;
     if (activeSection === "keyword") return <KeywordSection />;
+    if (activeSection === "trend") return <TrendSection />;
     if (activeSection === "aibot") return <AiBotSection />;
     if (activeSection === "brand") return <BrandSection />;
     const p = placeholders[activeSection];
