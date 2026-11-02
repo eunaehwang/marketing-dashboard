@@ -6,5 +6,6 @@ export async function GET() {
       process.env.NAVER_AD_API_KEY &&
       process.env.NAVER_AD_SECRET_KEY
     ),
+    openRouter: !!process.env.OPENROUTER_API_KEY,
   });
 }
