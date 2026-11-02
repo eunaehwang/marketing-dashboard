@@ -4,6 +4,7 @@ export type Section =
   | "trend"
   | "reviews"
   | "competitor"
+  | "adresearch"
   | "calendar"
   | "aibot"
   | "brand";

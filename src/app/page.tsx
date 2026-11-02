@@ -9,6 +9,7 @@ import TrendSection from "@/components/sections/TrendSection";
 import CompetitorSection from "@/components/sections/CompetitorSection";
 import AiBotSection from "@/components/sections/AiBotSection";
 import BrandSection from "@/components/sections/BrandSection";
+import AdResearchTab from "@/components/sections/AdResearchTab";
 import { Section } from "@/types";
 
 const placeholders: Partial<Record<Section, { title: string; subtitle: string; description: string }>> = {
@@ -32,6 +33,7 @@ export default function Dashboard() {
     if (activeSection === "keyword") return <KeywordSection />;
     if (activeSection === "trend") return <TrendSection />;
     if (activeSection === "competitor") return <CompetitorSection />;
+    if (activeSection === "adresearch") return <AdResearchTab />;
     if (activeSection === "aibot") return <AiBotSection />;
     if (activeSection === "brand") return <BrandSection />;
     const p = placeholders[activeSection];
