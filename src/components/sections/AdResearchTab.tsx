@@ -167,6 +167,8 @@ export default function AdResearchTab() {
   const [errors, setErrors] = useState<Record<ResearchType, string | null>>({ market: null, competitor: null, customer: null });
   const [hasOR, setHasOR] = useState<boolean | null>(null);
   const [expanded, setExpanded] = useState<Record<ResearchType, boolean>>({ market: true, competitor: true, customer: true });
+  const [sentPrompts, setSentPrompts] = useState<Partial<Record<ResearchType, string>>>({});
+  const [showPrompt, setShowPrompt] = useState<Partial<Record<ResearchType, boolean>>>({});
 
   useEffect(() => {
     try {
@@ -189,13 +191,15 @@ export default function AdResearchTab() {
   const runResearch = async (type: ResearchType) => {
     setLoading((p) => ({ ...p, [type]: true }));
     setErrors((p) => ({ ...p, [type]: null }));
+    const prompt = buildPrompt(type, brand);
+    setSentPrompts((p) => ({ ...p, [type]: prompt }));
     try {
       const res = await fetch("/api/openrouter", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "perplexity/sonar-pro",
-          messages: [{ role: "user", content: buildPrompt(type, brand) }],
+          messages: [{ role: "user", content: prompt }],
           stream: false,
         }),
       });
@@ -204,8 +208,11 @@ export default function AdResearchTab() {
         throw new Error(e.error ?? `HTTP ${res.status}`);
       }
       const result = await res.json();
-      const next = { ...data, [type]: { content: result.content, citations: result.citations ?? [], fetchedAt: new Date().toISOString() } };
-      saveData(next);
+      setData((prev) => {
+        const next = { ...prev, [type]: { content: result.content, citations: result.citations ?? [], fetchedAt: new Date().toISOString() } };
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch {}
+        return next;
+      });
     } catch (err) {
       setErrors((p) => ({ ...p, [type]: err instanceof Error ? err.message : String(err) }));
     } finally {
@@ -333,6 +340,24 @@ export default function AdResearchTab() {
                   {!result && !isLoading && !err && (
                     <div className="py-6 text-center text-xs" style={{ color: "var(--fg-3)" }}>
                       "분석 시작" 버튼을 눌러 리서치를 시작하세요
+                    </div>
+                  )}
+                  {sentPrompts[type] && !isLoading && (
+                    <div className="mt-4" style={{ borderTop: "1px solid var(--border)", paddingTop: 12 }}>
+                      <button
+                        onClick={() => setShowPrompt((p) => ({ ...p, [type]: !p[type] }))}
+                        className="text-xs flex items-center gap-1"
+                        style={{ color: "var(--fg-3)", background: "none", border: "none", cursor: "pointer", padding: 0 }}
+                      >
+                        <span>{showPrompt[type] ? "▲" : "▼"}</span>
+                        보낸 프롬프트 확인
+                      </button>
+                      {showPrompt[type] && (
+                        <pre className="mt-2 p-3 rounded-lg text-xs overflow-auto whitespace-pre-wrap break-words"
+                          style={{ background: "var(--surface-2)", color: "var(--fg-2)", border: "1px solid var(--border)", maxHeight: 300, fontSize: 11, lineHeight: 1.6 }}>
+                          {sentPrompts[type]}
+                        </pre>
+                      )}
                     </div>
                   )}
                 </div>
