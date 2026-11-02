@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import PlanningTab from "./PlanningTab";
 
 const BRAND_KEY = "brand_profile";
 const SUGGESTIONS_KEY = "ai_suggestions";
@@ -57,7 +58,7 @@ function PlatformDot({ type }: { type: string }) {
 }
 
 export default function AiBotSection() {
-  const [tab, setTab] = useState<"today" | "history">("today");
+  const [tab, setTab] = useState<"today" | "plan" | "history">("today");
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [openId, setOpenId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<Record<string, { type: "good" | "bad" | null; memo: string }>>({});
@@ -356,7 +357,7 @@ ${trendStr}
         className="flex border-b mb-4"
         style={{ borderColor: "var(--border)" }}
       >
-        {(["today", "history"] as const).map((t) => (
+        {(["today", "plan", "history"] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -368,12 +369,20 @@ ${trendStr}
               background: "transparent",
               border: "none",
               cursor: "pointer",
+              whiteSpace: "nowrap",
             }}
           >
-            {t === "today" ? `오늘의 제안 ${suggestions.length || ""}` : `피드백 히스토리 ${history.length || ""}`}
+            {t === "today"
+              ? `오늘의 제안 ${suggestions.length || ""}`
+              : t === "plan"
+              ? "✦ 프로모션 기획"
+              : `피드백 히스토리 ${history.length || ""}`}
           </button>
         ))}
       </div>
+
+      {/* Planning tab */}
+      {tab === "plan" && <PlanningTab />}
 
       {/* Today tab */}
       {tab === "today" && (
