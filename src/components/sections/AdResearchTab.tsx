@@ -28,14 +28,17 @@ const CONFIGS: Record<ResearchType, { label: string; icon: string; desc: string 
 
 function buildPrompt(type: ResearchType, brand: Partial<BrandProfile>): string {
   const name        = brand.brandName    || "브랜드";
-  const category    = brand.industry     || "소비재";    // products 제외, industry만
+  const category    = brand.industry     || "소비재";
   const competitors = brand.competitors  || `${name} 주요 경쟁 브랜드`;
   const ageRange    = brand.targetAge?.join(", ") || "";
   const gender      = brand.targetGender || "";
   const targetLine  = [ageRange, gender, brand.targetDescription].filter(Boolean).join(" · ");
   const tone        = brand.toneKeywords?.join(", ") || "";
   const channels    = brand.channels?.join(", ")    || "";
-  const products    = brand.products || "";
+  // 멀티라인 products를 단일행으로 정리 (불릿 제거, 80자 이내)
+  const products    = brand.products
+    ? brand.products.replace(/[\r\n]+/g, ", ").replace(/^[•·\-\s]+/gm, "").replace(/,\s*,/g, ",").trim().slice(0, 120)
+    : "";
   const success     = brand.successCases || "";
 
   const ctx = [
@@ -84,19 +87,19 @@ ${ctx}
 한국 시장 기준으로 최신 정보를 기반으로 분석해줘.`;
   }
 
-  return `한국 소비자들의 ${category} 제품에 대한 반응을 분석해줘.
+  return `한국 소비자들의 ${category} 제품 반응을 분석해줘. 특히 ${name} 브랜드의 마케팅 전략 수립에 활용할 인사이트가 필요해.
 
 [브랜드 컨텍스트]
 ${ctx}
 
 아래 항목을 분석해줘:
 
-1. **구매 동기**: 소비자들이 ${category} 제품을 구매하는 주요 이유와 기대 가치
-2. **긍정 반응**: SNS/커뮤니티에서 칭찬받는 요소, 재구매 이유
-3. **불만사항**: 주요 불만과 개선 요구 (제품, 가격, 광고 등)
-4. **광고 반응 패턴**: 어떤 유형의 광고/콘텐츠에 긍정적으로 반응하는지
+1. **구매 동기**: ${name} 같은 ${category} 브랜드를 선택하는 주요 이유와 기대 가치
+2. **긍정 반응**: SNS/커뮤니티에서 칭찬받는 요소, 재구매 이유 (${category} 카테고리 전반)
+3. **불만사항**: 주요 불만과 개선 요구 — ${name}이 해소할 수 있는 페인포인트 중심
+4. **광고 반응 패턴**: 어떤 유형의 광고/콘텐츠에 긍정 반응하는지 (${name} 타겟층 기준)
 5. **주요 언급 키워드**: SNS, 커뮤니티에서 자주 쓰이는 단어와 감성
-6. **구매 결정 요인**: 구매를 최종 결정하게 만드는 핵심 요소
+6. **${name}을 위한 인사이트**: 위 분석을 바탕으로 ${name} 광고 소재/메시지 방향 제안
 
 커뮤니티, 리뷰, SNS를 기반으로 실제 소비자 목소리를 반영해서 분석해줘.`;
 }
