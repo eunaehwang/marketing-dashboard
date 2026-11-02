@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 const STORAGE_KEY = "competitor_data";
 const BRANDS_KEY = "competitor_brands";
 
-const DEFAULT_BRANDS = ["살림백서", "유한마루", "피죤", "아이리스", "크린랩"];
+const DEFAULT_BRANDS = ["퍼실", "옥시", "유한락스", "테크", "다우니"];
 
 interface KeywordItem {
   relKeyword: string;
