@@ -163,13 +163,19 @@ export default function BrandSection() {
     });
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
       setSaved(true);
       setHasData(true);
       setTimeout(() => setSaved(false), 2500);
     } catch {}
+    // KV에 비동기 저장 (실패해도 로컬 저장은 영향 없음)
+    fetch("/api/save-brand", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(profile),
+    }).catch(() => {});
   };
 
   const isEmpty = !profile.brandName.trim();

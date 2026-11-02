@@ -211,11 +211,18 @@ export default function AdResearchTab() {
         throw new Error(e.error ?? `HTTP ${res.status}`);
       }
       const result = await res.json();
+      const researchEntry = { content: result.content, citations: result.citations ?? [], fetchedAt: new Date().toISOString() };
       setData((prev) => {
-        const next = { ...prev, [type]: { content: result.content, citations: result.citations ?? [], fetchedAt: new Date().toISOString() } };
+        const next = { ...prev, [type]: researchEntry };
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch {}
         return next;
       });
+      // KV에 비동기 저장
+      fetch("/api/save-research", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type, ...researchEntry }),
+      }).catch(() => {});
     } catch (err) {
       setErrors((p) => ({ ...p, [type]: err instanceof Error ? err.message : String(err) }));
     } finally {
