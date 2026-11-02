@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import ReactMarkdown from "react-markdown";
 
 const STORAGE_KEY = "adresearch_results";
 
@@ -120,14 +121,28 @@ function CitationLink({ url, index }: { url: string; index: number }) {
 function ResultView({ result }: { result: ResearchResult }) {
   return (
     <div>
-      <div
-        className="text-sm leading-relaxed mb-4"
-        style={{ color: "var(--fg-2)", whiteSpace: "pre-wrap", wordBreak: "break-word" }}
-      >
-        {result.content}
+      <div className="md-body mb-4">
+        <ReactMarkdown
+          components={{
+            h1: ({ children }) => <h1 style={{ fontSize: 17, fontWeight: 700, color: "var(--fg)", margin: "18px 0 6px", lineHeight: 1.4 }}>{children}</h1>,
+            h2: ({ children }) => <h2 style={{ fontSize: 15, fontWeight: 700, color: "var(--fg)", margin: "16px 0 5px", lineHeight: 1.4 }}>{children}</h2>,
+            h3: ({ children }) => <h3 style={{ fontSize: 13, fontWeight: 700, color: "var(--fg)", margin: "12px 0 4px", lineHeight: 1.4 }}>{children}</h3>,
+            p:  ({ children }) => <p  style={{ fontSize: 13, color: "var(--fg-2)", margin: "0 0 8px", lineHeight: 1.75 }}>{children}</p>,
+            ul: ({ children }) => <ul style={{ margin: "4px 0 10px 0", paddingLeft: 18 }}>{children}</ul>,
+            ol: ({ children }) => <ol style={{ margin: "4px 0 10px 0", paddingLeft: 18 }}>{children}</ol>,
+            li: ({ children }) => <li style={{ fontSize: 13, color: "var(--fg-2)", lineHeight: 1.7, marginBottom: 3 }}>{children}</li>,
+            strong: ({ children }) => <strong style={{ fontWeight: 700, color: "var(--fg)" }}>{children}</strong>,
+            em: ({ children }) => <em style={{ fontStyle: "italic", color: "var(--fg-2)" }}>{children}</em>,
+            code: ({ children }) => <code style={{ fontSize: 11, padding: "1px 5px", borderRadius: 4, background: "var(--surface-2)", color: "var(--accent)", fontFamily: "monospace" }}>{children}</code>,
+            blockquote: ({ children }) => <blockquote style={{ borderLeft: "3px solid var(--accent)", paddingLeft: 12, margin: "8px 0", color: "var(--fg-3)", fontStyle: "italic" }}>{children}</blockquote>,
+            hr: () => <hr style={{ border: "none", borderTop: "1px solid var(--border)", margin: "12px 0" }} />,
+          }}
+        >
+          {result.content}
+        </ReactMarkdown>
       </div>
       {result.citations.length > 0 && (
-        <div>
+        <div className="pt-3" style={{ borderTop: "1px solid var(--border)" }}>
           <div className="text-xs font-bold mb-2" style={{ color: "var(--fg-3)", letterSpacing: "0.05em" }}>
             출처 {result.citations.length}건
           </div>
