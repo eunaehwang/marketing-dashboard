@@ -5,8 +5,8 @@ import { useState, useEffect } from "react";
 const STORAGE_KEY = "naver_keywords";
 
 const DEFAULT_KEYWORDS = [
-  "올샌딩", "스텐세정제", "세탁폼", "주방세정제", "탈취제",
-  "냄비세정", "드럼세탁세제", "섬유탈취", "홈케어용품", "살림용품",
+  "스텐세정제", "주방세정제", "세탁폼", "탈취제", "섬유탈취제",
+  "냄비세정제", "욕실청소", "홈케어", "살림용품", "청소용품",
 ];
 
 interface KeywordItem {
