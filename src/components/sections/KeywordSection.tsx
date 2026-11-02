@@ -127,7 +127,7 @@ export default function KeywordSection() {
         </div>
         <button
           onClick={fetchAll}
-          disabled={loading || hasApiKey === false}
+          disabled={loading}
           className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold disabled:opacity-40"
           style={{ background: "var(--accent)", color: "#fff" }}
         >
