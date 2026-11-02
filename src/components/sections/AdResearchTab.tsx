@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
+import type { BrandProfile } from "@/types";
 
 const STORAGE_KEY = "adresearch_results";
 
@@ -17,16 +18,6 @@ interface ResearchData {
   customer?: ResearchResult;
 }
 
-interface BrandProfile {
-  brandName?: string;
-  industry?: string;
-  products?: string;
-  competitors?: string;
-  targetDescription?: string;
-  targetAge?: string[];
-  targetGender?: string;
-}
-
 type ResearchType = "market" | "competitor" | "customer";
 
 const CONFIGS: Record<ResearchType, { label: string; icon: string; desc: string }> = {
@@ -35,21 +26,33 @@ const CONFIGS: Record<ResearchType, { label: string; icon: string; desc: string 
   customer:   { label: "고객 반응",        icon: "💬", desc: "구매 동기 · 불만사항 · SNS 감성 · 광고 반응 패턴" },
 };
 
-function buildPrompt(type: ResearchType, brand: BrandProfile): string {
-  const name = brand.brandName || "브랜드";
-  const category = [brand.industry, brand.products].filter(Boolean).join(" / ") || "소비재";
-  const competitors = brand.competitors || `${name} 주요 경쟁 브랜드`;
-  const ageRange = brand.targetAge?.join(", ") || "";
-  const gender = brand.targetGender || "";
-  const targetLine = [ageRange, gender, brand.targetDescription].filter(Boolean).join(" / ");
+function buildPrompt(type: ResearchType, brand: Partial<BrandProfile>): string {
+  const name        = brand.brandName    || "브랜드";
+  const category    = brand.industry     || "소비재";    // products 제외, industry만
+  const competitors = brand.competitors  || `${name} 주요 경쟁 브랜드`;
+  const ageRange    = brand.targetAge?.join(", ") || "";
+  const gender      = brand.targetGender || "";
+  const targetLine  = [ageRange, gender, brand.targetDescription].filter(Boolean).join(" · ");
+  const tone        = brand.toneKeywords?.join(", ") || "";
+  const channels    = brand.channels?.join(", ")    || "";
+  const products    = brand.products || "";
+  const success     = brand.successCases || "";
+
+  const ctx = [
+    `- 브랜드: ${name}`,
+    `- 카테고리: ${category}`,
+    products   && `- 주요 제품: ${products}`,
+    targetLine && `- 타겟: ${targetLine}`,
+    tone       && `- 톤앤매너: ${tone}`,
+    channels   && `- 채널: ${channels}`,
+    success    && `- 성공 사례: ${success}`,
+  ].filter(Boolean).join("\n");
 
   if (type === "market") {
     return `한국 ${category} 시장과 광고 크리에이티브 트렌드를 분석해줘.
 
 [브랜드 컨텍스트]
-- 브랜드: ${name}
-- 카테고리: ${category}
-${targetLine ? `- 타겟: ${targetLine}` : ""}
+${ctx}
 
 아래 항목을 포함해서 분석해줘:
 
@@ -65,10 +68,9 @@ ${targetLine ? `- 타겟: ${targetLine}` : ""}
   if (type === "competitor") {
     return `한국 ${category} 시장에서 경쟁 브랜드들의 광고 크리에이티브 전략을 분석해줘.
 
-[분석 대상]
-- 우리 브랜드: ${name}
-- 경쟁사: ${competitors}
-- 카테고리: ${category}
+[브랜드 컨텍스트]
+${ctx}
+- 분석할 경쟁사: ${competitors}
 
 아래 항목을 포함해서 분석해줘:
 
@@ -82,12 +84,10 @@ ${targetLine ? `- 타겟: ${targetLine}` : ""}
 한국 시장 기준으로 최신 정보를 기반으로 분석해줘.`;
   }
 
-  return `한국 소비자들의 ${category} 제품과 ${name} 브랜드에 대한 반응을 분석해줘.
+  return `한국 소비자들의 ${category} 제품에 대한 반응을 분석해줘.
 
 [브랜드 컨텍스트]
-- 브랜드: ${name}
-- 카테고리: ${category}
-${targetLine ? `- 타겟: ${targetLine}` : ""}
+${ctx}
 
 아래 항목을 분석해줘:
 
@@ -161,7 +161,7 @@ function ResultView({ result }: { result: ResearchResult }) {
 }
 
 export default function AdResearchTab() {
-  const [brand, setBrand] = useState<BrandProfile>({});
+  const [brand, setBrand] = useState<Partial<BrandProfile>>({});
   const [data, setData] = useState<ResearchData>({});
   const [loading, setLoading] = useState<Record<ResearchType, boolean>>({ market: false, competitor: false, customer: false });
   const [errors, setErrors] = useState<Record<ResearchType, string | null>>({ market: null, competitor: null, customer: null });
@@ -246,7 +246,9 @@ export default function AdResearchTab() {
           style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
           <span className="text-xs font-bold" style={{ color: "var(--fg)" }}>{brand.brandName}</span>
           {brand.industry && <span className="text-xs" style={{ color: "var(--fg-3)" }}>{brand.industry}</span>}
-          {brand.products && <span className="text-xs" style={{ color: "var(--fg-3)" }}>{brand.products}</span>}
+          {brand.targetAge && brand.targetAge.length > 0 && (
+            <span className="text-xs" style={{ color: "var(--fg-3)" }}>타겟: {brand.targetAge.join(", ")}</span>
+          )}
           {brand.competitors && (
             <span className="text-xs" style={{ color: "var(--fg-3)" }}>
               경쟁사: {brand.competitors}
