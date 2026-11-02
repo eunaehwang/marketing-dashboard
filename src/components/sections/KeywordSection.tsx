@@ -132,7 +132,7 @@ export default function KeywordSection() {
           style={{ background: "var(--accent)", color: "#fff" }}
         >
           <span style={{ display: "inline-block", animation: loading ? "spin 0.8s linear infinite" : "none" }}>↻</span>
-          {loading ? "불러오는 중..." : "데이터 가져오기"}
+          {loading ? "불러오는 중..." : "데이터 가져오기 ↻"}
         </button>
       </div>
 
