@@ -5,13 +5,29 @@ const OR_BASE = "https://openrouter.ai/api/v1/chat/completions";
 
 export const maxDuration = 60;
 
+const ALLOWED_MODELS = new Set([
+  "perplexity/sonar-pro",
+  "perplexity/sonar",
+  "openai/gpt-4o-mini",
+  "openai/gpt-4o",
+  "anthropic/claude-haiku-5-5",
+  "anthropic/claude-sonnet-4-6",
+]);
+const MAX_TOKENS_LIMIT = 8000;
+
 export async function POST(req: NextRequest) {
   if (!API_KEY) {
     return Response.json({ error: "OPENROUTER_API_KEY 환경 변수가 없습니다" }, { status: 503 });
   }
 
   try {
-    const { model, messages, systemPrompt, stream = false } = await req.json();
+    const { model, messages, systemPrompt, stream = false, max_tokens } = await req.json();
+
+    if (!ALLOWED_MODELS.has(model)) {
+      return Response.json({ error: `허용되지 않은 모델: ${model}` }, { status: 400 });
+    }
+
+    const resolvedTokens = max_tokens ? Math.min(max_tokens, MAX_TOKENS_LIMIT) : undefined;
 
     const res = await fetch(OR_BASE, {
       method: "POST",
@@ -28,6 +44,7 @@ export async function POST(req: NextRequest) {
           ...messages,
         ],
         stream,
+        ...(resolvedTokens ? { max_tokens: resolvedTokens } : {}),
       }),
     });
 

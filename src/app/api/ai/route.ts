@@ -3,6 +3,13 @@ import { NextRequest } from "next/server";
 
 export const maxDuration = 60;
 
+const ALLOWED_MODELS = new Set([
+  "claude-haiku-5-5",
+  "claude-sonnet-4-6",
+  "claude-sonnet-5-5",
+]);
+const MAX_TOKENS_LIMIT = 4000;
+
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 const SYSTEM_PROMPT = `당신은 한국 마케터를 위한 AI 기획 어시스턴트입니다.
@@ -23,9 +30,12 @@ export async function POST(req: NextRequest) {
   try {
     const { messages, systemPrompt, model, maxTokens } = await req.json();
 
+    const resolvedModel = ALLOWED_MODELS.has(model) ? model : "claude-haiku-5-5";
+    const resolvedTokens = Math.min(maxTokens ?? 1500, MAX_TOKENS_LIMIT);
+
     const stream = await client.messages.stream({
-      model: model ?? "claude-haiku-5-5",
-      max_tokens: maxTokens ?? 1500,
+      model: resolvedModel,
+      max_tokens: resolvedTokens,
       system: systemPrompt ?? SYSTEM_PROMPT,
       messages,
     });

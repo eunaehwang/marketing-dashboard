@@ -18,7 +18,10 @@
 
 ```
 GET https://marketing-dashboard-seven-psi.vercel.app/api/hermes-context
+x-hermes-token: <HERMES_TOKEN 환경변수 값>
 ```
+
+토큰은 `%LOCALAPPDATA%\hermes\.env` (Windows) 또는 `~/.hermes/.env` (Mac/Linux)의 `HERMES_TOKEN` 값을 사용한다.
 
 응답은 plain text 형식이며 다음을 포함한다:
 - 브랜드 프로필 (브랜드명, 제품, 타겟, 톤앤매너, 경쟁사 등)
