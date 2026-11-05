@@ -7,13 +7,6 @@ const BRAND_KEY = "brand_profile";
 const SUGGESTIONS_KEY = "ai_suggestions";
 const FEEDBACK_KEY = "ai_feedback";
 
-// Will be replaced with live API data once Google Trends is connected
-const TRENDS = [
-  { label: "▲ 수전·스텐 +18%", hot: true },
-  { label: "▲ 육아 낙서 릴스", hot: true },
-  { label: "▲ 가을 이사 시즌", hot: true },
-  { label: "집들이 선물 검색", hot: false },
-];
 
 interface Suggestion {
   id: string;
@@ -134,15 +127,11 @@ export default function AiBotSection() {
 
       const today = new Date();
       const dateStr = `${today.getFullYear()}년 ${today.getMonth() + 1}월 ${today.getDate()}일`;
-      const trendStr = TRENDS.map((t) => `- ${t.label}`).join("\n");
 
       const prompt = `오늘(${dateStr}) 마케팅 기획 제안 3개를 생성해주세요.
 
 브랜드 정보:
 ${brandInfo}
-
-현재 트렌드:
-${trendStr}
 
 아래 JSON 배열 형식으로만 응답하세요. 마크다운 코드블록 없이 순수 JSON 배열만:
 [
@@ -328,29 +317,6 @@ ${trendStr}
         </button>
       </div>
 
-      {/* Trend strip */}
-      <div className="flex items-center gap-2 flex-wrap mb-4">
-        <span
-          className="text-xs font-bold uppercase tracking-widest"
-          style={{ color: "var(--fg-3)", fontSize: 10, letterSpacing: "0.08em" }}
-        >
-          트렌드
-        </span>
-        {TRENDS.map((t, i) => (
-          <span
-            key={i}
-            className="text-xs px-2.5 py-1 rounded-full font-medium"
-            style={{
-              background: t.hot ? "var(--accent-light, rgba(107,103,255,0.08))" : "var(--surface-2)",
-              color: t.hot ? "var(--accent)" : "var(--fg-3)",
-              border: `1px solid ${t.hot ? "var(--accent)" : "var(--border)"}`,
-              borderColor: t.hot ? "rgba(107,103,255,0.3)" : "var(--border)",
-            }}
-          >
-            {t.label}
-          </span>
-        ))}
-      </div>
 
       {/* Tabs */}
       <div
