@@ -172,6 +172,7 @@ export default function AdResearchTab() {
   const [expanded, setExpanded] = useState<Record<ResearchType, boolean>>({ market: true, competitor: true, customer: true });
   const [sentPrompts, setSentPrompts] = useState<Partial<Record<ResearchType, string>>>({});
   const [showPrompt, setShowPrompt] = useState<Partial<Record<ResearchType, boolean>>>({});
+  const [serverSave, setServerSave] = useState<Partial<Record<ResearchType, "ok" | "fail">>>({});
 
   useEffect(() => {
     try {
@@ -217,12 +218,14 @@ export default function AdResearchTab() {
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch {}
         return next;
       });
-      // KV에 비동기 저장
+      // KV에 비동기 저장 — 결과를 화면에 표시
       fetch("/api/save-research", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ type, ...researchEntry }),
-      }).catch(() => {});
+      })
+        .then((r) => setServerSave((p) => ({ ...p, [type]: r.ok ? "ok" : "fail" })))
+        .catch(() => setServerSave((p) => ({ ...p, [type]: "fail" })));
     } catch (err) {
       setErrors((p) => ({ ...p, [type]: err instanceof Error ? err.message : String(err) }));
     } finally {
@@ -350,6 +353,11 @@ export default function AdResearchTab() {
                   {!result && !isLoading && !err && (
                     <div className="py-6 text-center text-xs" style={{ color: "var(--fg-3)" }}>
                       "분석 시작" 버튼을 눌러 리서치를 시작하세요
+                    </div>
+                  )}
+                  {serverSave[type] && !isLoading && (
+                    <div className="mt-3 text-xs" style={{ color: serverSave[type] === "fail" ? "#b91c1c" : "var(--fg-3)" }}>
+                      {serverSave[type] === "ok" ? "✓ 서버 저장 완료" : "⚠️ 이 브라우저에만 저장됐어요 (서버 저장 실패)"}
                     </div>
                   )}
                   {sentPrompts[type] && !isLoading && (

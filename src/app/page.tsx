@@ -3,47 +3,66 @@
 import { useState } from "react";
 import Sidebar from "@/components/layout/Sidebar";
 import OverviewSection from "@/components/sections/OverviewSection";
-import KeywordSection from "@/components/sections/KeywordSection";
-import PlaceholderSection from "@/components/sections/PlaceholderSection";
-import TrendSection from "@/components/sections/TrendSection";
-import CompetitorSection from "@/components/sections/CompetitorSection";
 import AiBotSection from "@/components/sections/AiBotSection";
 import BrandSection from "@/components/sections/BrandSection";
 import AdResearchTab from "@/components/sections/AdResearchTab";
+import PlaceholderSection from "@/components/sections/PlaceholderSection";
+import ReviewAnalysisSection from "@/components/sections/ReviewAnalysisSection";
+import MarketSection from "@/components/sections/MarketSection";
+import StrategyMatrixSection from "@/components/sections/StrategyMatrixSection";
+import CreativeBriefSection from "@/components/sections/CreativeBriefSection";
+import SettingsSection from "@/components/sections/SettingsSection";
 import { Section } from "@/types";
+import products from "@/config/products";
 
-const placeholders: Partial<Record<Section, { title: string; subtitle: string; description: string }>> = {
-  reviews:    { title: "후기 분석",   subtitle: "자사 리뷰 데이터 기반",      description: "리뷰 데이터 소스 연결 후 활성화됩니다." },
-  calendar:   { title: "날짜 체크",   subtitle: "캠페인 · 콘텐츠 일정 관리",  description: "일정 관리 기능이 곧 추가됩니다." },
-};
-
-const mobileNavItems: { id: Section; label: string }[] = [
-  { id: "overview",   label: "요약" },
-  { id: "keyword",    label: "키워드" },
-  { id: "brand",      label: "브랜드" },
-  { id: "aibot",      label: "AI봇" },
-  { id: "calendar",   label: "일정" },
+const mobileFlowItems: { id: Section; label: string }[] = [
+  { id: "overview",  label: "홈" },
+  { id: "step4",     label: "판정" },
+  { id: "step2",     label: "기획" },
+  { id: "settings",  label: "설정" },
 ];
 
 export default function Dashboard() {
-  const [activeSection, setActiveSection] = useState<Section>("overview");
+  const [activeSection, setActiveSection] = useState<Section>("step2");
+  const [productId, setProductId] = useState<string>(products[0]?.id ?? "");
 
   const renderSection = () => {
-    if (activeSection === "overview") return <OverviewSection />;
-    if (activeSection === "keyword") return <KeywordSection />;
-    if (activeSection === "trend") return <TrendSection />;
-    if (activeSection === "competitor") return <CompetitorSection />;
-    if (activeSection === "adresearch") return <AdResearchTab />;
-    if (activeSection === "aibot") return <AiBotSection />;
-    if (activeSection === "brand") return <BrandSection />;
-    const p = placeholders[activeSection];
-    if (p) return <PlaceholderSection {...p} />;
-    return null;
+    switch (activeSection) {
+      case "step1":
+        return <PlaceholderSection title="1. 현황 진단" subtitle="Meta 인사이트 · Cafe24 UTM" description="Meta/Cafe24 연동 후 활성화됩니다. (3단계 이후 작업)" />;
+      case "step2":
+        return <ReviewAnalysisSection productId={productId} />;
+      case "step3":
+        return <MarketSection productId={productId} />;
+      case "step4":
+        return <StrategyMatrixSection productId={productId} />;
+      case "step5":
+        return <CreativeBriefSection productId={productId} />;
+      case "step6":
+        return <PlaceholderSection title="6. 테스트 결과" subtitle="Meta 1-1-1 결과 기록" description="Meta API 연동 후 활성화됩니다. (3단계 이후 작업)" />;
+      case "overview":
+        return <OverviewSection productId={productId} />;
+      case "aibot":
+        return <AiBotSection />;
+      case "brand":
+        return <BrandSection />;
+      case "adresearch":
+        return <AdResearchTab />;
+      case "settings":
+        return <SettingsSection />;
+      default:
+        return <PlaceholderSection title="준비 중" subtitle="" description="곧 추가됩니다." />;
+    }
   };
 
   return (
     <div className="flex min-h-screen">
-      <Sidebar active={activeSection} onNavigate={setActiveSection} />
+      <Sidebar
+        active={activeSection}
+        onNavigate={setActiveSection}
+        productId={productId}
+        onProductChange={setProductId}
+      />
 
       <main className="flex-1 min-w-0 px-5 pt-7 pb-24 md:pb-10 max-w-5xl">
         {renderSection()}
@@ -51,7 +70,7 @@ export default function Dashboard() {
 
       {/* Mobile bottom nav */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 border-t flex" style={{ background: "var(--surface)", borderColor: "var(--border)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
-        {mobileNavItems.map((item) => (
+        {mobileFlowItems.map((item) => (
           <button
             key={item.id}
             onClick={() => setActiveSection(item.id)}
