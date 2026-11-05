@@ -13,10 +13,11 @@ const flowSteps: { id: Section; step: number; label: string; sublabel: string; i
 ];
 
 const toolItems: { id: Section; label: string; icon: string }[] = [
+  { id: "overview",   label: "홈",            icon: "chart" },
   { id: "brand",      label: "브랜드 프로필", icon: "brand" },
   { id: "aibot",      label: "AI 기획봇",     icon: "bot" },
   { id: "adresearch", label: "광고 리서치",   icon: "adresearch" },
-  { id: "overview",   label: "요약",          icon: "chart" },
+  { id: "settings",   label: "설정",          icon: "settings" },
 ];
 
 const Icon = ({ name }: { name: string }) => {
@@ -31,6 +32,7 @@ const Icon = ({ name }: { name: string }) => {
     bot:        <><rect x="3" y="4" width="10" height="8" rx="2" fill="none" strokeWidth="1.5"/><path d="M6 1.5v2.5M10 1.5v2.5M5.5 9h5M5.5 11h3" fill="none" strokeWidth="1.5"/></>,
     adresearch: <><circle cx="8" cy="8" r="5.5" fill="none" strokeWidth="1.5"/><path d="M8 5v3l2 2" fill="none" strokeWidth="1.5"/><path d="M12.5 12.5l2 2" fill="none" strokeWidth="1.5"/></>,
     chart:      <><rect x="1" y="8" width="4" height="7" rx="1"/><rect x="6" y="5" width="4" height="10" rx="1"/><rect x="11" y="2" width="4" height="13" rx="1"/></>,
+    settings:   <><circle cx="8" cy="8" r="2.5" fill="none" strokeWidth="1.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.42 1.42M11.53 11.53l1.42 1.42M3.05 12.95l1.42-1.42M11.53 4.47l1.42-1.42" strokeWidth="1.5"/></>,
   };
   return (
     <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor" stroke="currentColor">

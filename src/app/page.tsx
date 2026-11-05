@@ -11,15 +11,15 @@ import ReviewAnalysisSection from "@/components/sections/ReviewAnalysisSection";
 import MarketSection from "@/components/sections/MarketSection";
 import StrategyMatrixSection from "@/components/sections/StrategyMatrixSection";
 import CreativeBriefSection from "@/components/sections/CreativeBriefSection";
+import SettingsSection from "@/components/sections/SettingsSection";
 import { Section } from "@/types";
 import products from "@/config/products";
 
 const mobileFlowItems: { id: Section; label: string }[] = [
-  { id: "step2", label: "고객" },
-  { id: "step3", label: "시장" },
-  { id: "step4", label: "전략" },
-  { id: "step5", label: "요청서" },
-  { id: "brand", label: "브랜드" },
+  { id: "overview",  label: "홈" },
+  { id: "step4",     label: "판정" },
+  { id: "step2",     label: "기획" },
+  { id: "settings",  label: "설정" },
 ];
 
 export default function Dashboard() {
@@ -48,6 +48,8 @@ export default function Dashboard() {
         return <BrandSection />;
       case "adresearch":
         return <AdResearchTab />;
+      case "settings":
+        return <SettingsSection />;
       default:
         return <PlaceholderSection title="준비 중" subtitle="" description="곧 추가됩니다." />;
     }

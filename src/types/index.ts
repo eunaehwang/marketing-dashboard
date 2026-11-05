@@ -17,7 +17,8 @@ export type LegacySection =
   | "adresearch"
   | "calendar"
   | "aibot"
-  | "brand";
+  | "brand"
+  | "settings";
 
 export type Section = FlowStep | LegacySection;
 
