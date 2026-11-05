@@ -74,7 +74,7 @@ export default function CreativeBriefSection({ productId }: Props) {
   useEffect(() => {
     setApprovedRows(loadApprovedRows(productId));
     setBrief(loadSavedBrief(productId));
-    serverList<Creative>(creativesKey(productId), 100).then((list) => setSavedCount(list.length));
+    serverList<Creative>(creativesKey(productId), 100).then((r) => { if (r.ok) setSavedCount(r.data.length); });
   }, [productId]);
 
   const generate = async () => {

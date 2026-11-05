@@ -45,13 +45,18 @@ export default function ReviewAnalysisSection({ productId }: Props) {
   const [fileName, setFileName] = useState("");
   const [saveStatus, setSaveStatus] = useState<"idle" | "ok" | "fail">("idle");
   const [migrating, setMigrating] = useState(false);
+  const [loadError, setLoadError] = useState(false);
 
   // 로드: 서버 우선, 없으면 localStorage
   useEffect(() => {
     (async () => {
-      const list = await serverList<StoredReview>(serverKey(productId), 1);
-      if (list[0]) {
-        const { savedAt: _, ...r } = list[0];
+      const result = await serverList<StoredReview>(serverKey(productId), 1);
+      if (!result.ok) {
+        setLoadError(true);
+        return;
+      }
+      if (result.data[0]) {
+        const { savedAt: _, ...r } = result.data[0];
         setResult(r);
         setSource("server");
       } else {
@@ -80,6 +85,7 @@ export default function ReviewAnalysisSection({ productId }: Props) {
   }, [handleFile]);
 
   const analyze = async () => {
+    if (loadError) { setError("서버 연결 실패 — 새로 고침 후 다시 시도해주세요."); return; }
     if (!reviewText.trim()) { setError("리뷰 텍스트를 먼저 붙여넣거나 파일을 올려주세요."); return; }
     setLoading(true);
     setError("");
@@ -171,8 +177,16 @@ export default function ReviewAnalysisSection({ productId }: Props) {
         </p>
       )}
 
+      {/* 서버 읽기 실패 경고 */}
+      {loadError && (
+        <div className="mt-3 px-4 py-3 rounded-lg text-sm flex items-start gap-2" style={{ background: "#fef2f2", color: "#b91c1c", border: "1px solid #fca5a5" }}>
+          <span className="flex-shrink-0">⚠️</span>
+          <div><strong>서버 연결 실패</strong> — 저장 기능이 비활성화됩니다. 새로 고침해주세요.</div>
+        </div>
+      )}
+
       {/* 마이그레이션 버튼 */}
-      {source === "local" && result && saveStatus === "idle" && (
+      {source === "local" && result && saveStatus === "idle" && !loadError && (
         <div className="mt-3 px-4 py-3 rounded-lg flex items-center justify-between gap-3" style={{ background: "var(--surface-2)" }}>
           <p className="text-xs" style={{ color: "var(--fg-3)" }}>이 분석은 이 브라우저에만 저장돼 있어요.</p>
           <button
