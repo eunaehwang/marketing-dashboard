@@ -52,12 +52,20 @@ function buildContext(): string {
     const bp = localStorage.getItem("brand_profile");
     if (bp) {
       const p = JSON.parse(bp);
+      const targetLine = [
+        p.targetAge?.join(", "),
+        p.targetGender,
+        p.targetDescription,
+      ].filter(Boolean).join(" · ");
       const rows = [
-        p.brandName && `브랜드명: ${p.brandName}`,
-        p.industry && `업종: ${p.industry}`,
-        (p.products || p.mainProduct) && `주요 제품: ${p.products ?? p.mainProduct}`,
-        p.targetAudience && `목표 고객: ${p.targetAudience}`,
-        p.uniquePoint && `특징: ${p.uniquePoint}`,
+        p.brandName    && `브랜드명: ${p.brandName}`,
+        p.industry     && `업종: ${p.industry}`,
+        p.products     && `주요 제품: ${p.products}`,
+        targetLine     && `목표 고객: ${targetLine}`,
+        p.toneKeywords?.length && `톤앤매너: ${p.toneKeywords.join(", ")}`,
+        p.competitors  && `경쟁사: ${p.competitors}`,
+        p.successCases && `성공 사례: ${p.successCases}`,
+        p.doNotList    && `주의사항: ${p.doNotList}`,
       ].filter(Boolean).join("\n");
       if (rows) parts.push(`[브랜드 프로필]\n${rows}`);
     }
@@ -114,7 +122,7 @@ function checkData() {
 function getCategory(): string {
   try {
     const bp = localStorage.getItem("brand_profile");
-    if (bp) { const p = JSON.parse(bp); return p.industry ?? p.mainProduct ?? "생활용품"; }
+    if (bp) { const p = JSON.parse(bp); return p.industry ?? "생활용품"; }
   } catch {}
   return "생활용품";
 }

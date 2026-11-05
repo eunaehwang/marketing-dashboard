@@ -40,10 +40,19 @@ NAVER_AD_CUSTOMER_ID=
 NAVER_AD_ACCESS_LICENSE=
 NAVER_AD_SECRET_KEY=
 
-# Claude API
+# Claude API (Anthropic)
 ANTHROPIC_API_KEY=
 
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
+# OpenRouter (Perplexity sonar-pro 등)
+OPENROUTER_API_KEY=
+
+# Upstash Redis (서버 저장소 — 없으면 localStorage만 사용)
+UPSTASH_REDIS_REST_URL=
+UPSTASH_REDIS_REST_TOKEN=
+
+# 대시보드 접근 비밀번호 (설정 시 로그인 필요)
+DASHBOARD_PASSWORD=
+
+# Hermes Agent 연동 토큰 (설정 시 /api/hermes-context 인증 활성)
+HERMES_TOKEN=
 ```
