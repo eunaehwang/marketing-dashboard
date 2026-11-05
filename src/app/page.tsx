@@ -41,7 +41,7 @@ export default function Dashboard() {
       case "step6":
         return <PlaceholderSection title="6. 테스트 결과" subtitle="Meta 1-1-1 결과 기록" description="Meta API 연동 후 활성화됩니다. (3단계 이후 작업)" />;
       case "overview":
-        return <OverviewSection />;
+        return <OverviewSection productId={productId} />;
       case "aibot":
         return <AiBotSection />;
       case "brand":

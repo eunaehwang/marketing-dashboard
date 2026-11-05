@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { getProduct } from "@/config/products";
+import BasisBadge from "@/components/ui/BasisBadge";
 
 interface ReviewResult {
   buyReasons: string[];
@@ -177,7 +178,10 @@ export default function ReviewAnalysisSection({ productId }: Props) {
         <div className="mt-8 space-y-5">
           {/* 핵심 인사이트 */}
           <div className="p-4 rounded-xl" style={{ background: "var(--accent-light)" }}>
-            <div className="text-xs font-semibold uppercase mb-1" style={{ color: "var(--accent)", fontSize: "10px" }}>핵심 인사이트</div>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="text-xs font-semibold uppercase" style={{ color: "var(--accent)", fontSize: "10px" }}>핵심 인사이트</div>
+              <BasisBadge basis="근거" />
+            </div>
             <p className="text-sm font-medium" style={{ color: "var(--fg)" }}>{result.topInsight}</p>
           </div>
 
@@ -214,7 +218,10 @@ export default function ReviewAnalysisSection({ productId }: Props) {
 function Card({ title, items, color }: { title: string; items: string[]; color: string }) {
   return (
     <div className="p-4 rounded-xl border" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-      <div className="text-xs font-semibold uppercase mb-2" style={{ color, fontSize: "10px" }}>{title}</div>
+      <div className="flex items-center gap-2 mb-2">
+        <div className="text-xs font-semibold uppercase" style={{ color, fontSize: "10px" }}>{title}</div>
+        <BasisBadge basis="근거" />
+      </div>
       <ul className="space-y-1.5">
         {items.map((item, i) => (
           <li key={i} className="flex items-start gap-2 text-sm" style={{ color: "var(--fg-2)" }}>

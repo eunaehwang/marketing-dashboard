@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { getProduct } from "@/config/products";
+import BasisBadge from "@/components/ui/BasisBadge";
 
 interface MatrixRow {
   id: string;
@@ -190,12 +191,7 @@ export default function StrategyMatrixSection({ productId }: Props) {
                     <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: "var(--surface-2)", color: "var(--fg-2)" }}>
                       {row.target}
                     </span>
-                    <span
-                      className="text-xs px-1.5 py-0.5 rounded"
-                      style={{ background: row.type === "근거" ? "#dcfce7" : "#fef9c3", color: row.type === "근거" ? "#166534" : "#854d0e" }}
-                    >
-                      {row.type}
-                    </span>
+                    <BasisBadge basis={row.type} />
                   </div>
                   <div className="text-sm font-medium mb-1" style={{ color: "var(--fg)" }}>"{row.hook}"</div>
                   <div className="text-xs" style={{ color: "var(--fg-3)" }}>{row.rationale}</div>

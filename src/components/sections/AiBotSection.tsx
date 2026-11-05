@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import PlanningTab from "./PlanningTab";
+import BasisBadge from "@/components/ui/BasisBadge";
 
 const BRAND_KEY = "brand_profile";
 const SUGGESTIONS_KEY = "ai_suggestions";
@@ -409,6 +410,7 @@ ${brandInfo}
                         <span className="text-xs" style={{ color: "var(--fg-3)" }}>
                           {s.platform}
                         </span>
+                        <BasisBadge basis="가설" />
                       </div>
                       <div
                         className="text-sm font-semibold truncate"
