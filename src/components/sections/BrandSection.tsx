@@ -137,7 +137,7 @@ function Card({
 
 export default function BrandSection() {
   const [profile, setProfile] = useState<BrandProfile>(DEFAULT);
-  const [saved, setSaved] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<"idle" | "local" | "server" | "server-fail">("idle");
   const [hasData, setHasData] = useState(false);
 
   useEffect(() => {
@@ -166,16 +166,20 @@ export default function BrandSection() {
   const handleSave = async () => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
-      setSaved(true);
       setHasData(true);
-      setTimeout(() => setSaved(false), 2500);
     } catch {}
-    // KV에 비동기 저장 (실패해도 로컬 저장은 영향 없음)
-    fetch("/api/save-brand", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(profile),
-    }).catch(() => {});
+    setSaveStatus("local");
+    try {
+      const res = await fetch("/api/save-brand", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(profile),
+      });
+      setSaveStatus(res.ok ? "server" : "server-fail");
+    } catch {
+      setSaveStatus("server-fail");
+    }
+    setTimeout(() => setSaveStatus("idle"), 4000);
   };
 
   const isEmpty = !profile.brandName.trim();
@@ -393,12 +397,21 @@ export default function BrandSection() {
           className="w-full py-3.5 rounded-xl text-sm font-bold transition-all disabled:opacity-30"
           style={{ background: "var(--accent)", color: "#fff" }}
         >
-          {saved ? "✓ 저장됐어요!" : "브랜드 프로필 저장"}
+          {saveStatus === "idle" ? "브랜드 프로필 저장" : saveStatus === "local" ? "저장 중…" : saveStatus === "server" ? "✓ 저장 완료" : "저장됨"}
         </button>
 
-        <p className="text-center text-xs pb-4" style={{ color: "var(--fg-3)" }}>
-          브라우저에 저장됩니다 · 나중에 언제든 수정 가능
-        </p>
+        {saveStatus !== "idle" && (
+          <p className="text-center text-xs mt-1" style={{ color: saveStatus === "server-fail" ? "#b91c1c" : "var(--fg-3)" }}>
+            {saveStatus === "server" && "브라우저 + 서버 저장 완료"}
+            {saveStatus === "server-fail" && "⚠️ 이 브라우저에만 저장됐어요 (서버 저장 실패)"}
+            {saveStatus === "local" && "브라우저 저장 중…"}
+          </p>
+        )}
+        {saveStatus === "idle" && (
+          <p className="text-center text-xs pb-4" style={{ color: "var(--fg-3)" }}>
+            저장하면 브라우저 + 서버에 함께 보관됩니다
+          </p>
+        )}
       </div>
     </div>
   );

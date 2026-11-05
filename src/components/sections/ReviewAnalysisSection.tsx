@@ -39,6 +39,7 @@ export default function ReviewAnalysisSection({ productId }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [fileName, setFileName] = useState("");
+  const [serverSave, setServerSave] = useState<"ok" | "fail" | null>(null);
 
   const handleFile = useCallback((file: File) => {
     setFileName(file.name);
@@ -86,12 +87,14 @@ export default function ReviewAnalysisSection({ productId }: Props) {
       const r = data.result as ReviewResult;
       setResult(r);
       saveToBrowser(productId, r);
-      // 서버 저장 (fire-and-forget)
+      setServerSave(null);
       fetch("/api/save-research", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ type: `reviews_${productId}`, content: JSON.stringify(r), citations: [] }),
-      }).catch(() => {});
+      })
+        .then((sr) => setServerSave(sr.ok ? "ok" : "fail"))
+        .catch(() => setServerSave("fail"));
     } catch (e) {
       setError(e instanceof Error ? e.message : "알 수 없는 오류");
     } finally {
@@ -162,6 +165,12 @@ export default function ReviewAnalysisSection({ productId }: Props) {
       >
         {loading ? "분석 중…" : "리뷰 분석하기"}
       </button>
+
+      {serverSave && (
+        <p className="mt-2 text-xs text-center" style={{ color: serverSave === "fail" ? "#b91c1c" : "var(--fg-3)" }}>
+          {serverSave === "ok" ? "✓ 서버 저장 완료" : "⚠️ 이 브라우저에만 저장됐어요 (서버 저장 실패)"}
+        </p>
+      )}
 
       {/* 결과 */}
       {result && (
