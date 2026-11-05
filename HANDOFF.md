@@ -187,7 +187,24 @@
 
 ---
 
-## 7. 작업 방식 메모
+## 7. PR #2 점검 결과 → 다음 작업 (2026-11-05)
+
+PR #2(0~2.5단계 + UI 정리)는 머지 가능 상태로 점검 완료(타입 검사 통과). 아래는 **다음 브랜치에서 할 일**, 위에서부터 순서대로.
+
+1. **localStorage → 서버 저장 전환 (최우선).**
+   - 지금 `ReviewAnalysisSection`, `StrategyMatrixSection`, `CreativeBriefSection`, `OverviewSection`이 모두 localStorage에만 저장·조회한다. `src/lib/store.ts`는 정의만 있고 어디서도 쓰지 않는다.
+   - `/api/store` (또는 기능별 라우트)를 만들어 `keys.*`로 읽고 쓴다: 리뷰 분석 → `productStage(id, "customer")`(날짜별 누적), 매트릭스 → `productStage(id, "matrix")`, 판정 → `verdicts(id)` 리스트 누적, 요청서 → `creatives(id)` 리스트(`Creative` 타입 그대로, `format` 포함).
+   - 기존 localStorage 데이터는 "서버로 옮기기" 버튼으로 1회 업로드. 이후 localStorage는 쓰지 않거나 임시 캐시로만.
+   - 저장 실패 시 기존 규칙대로 "서버 저장 실패(이 브라우저에만 저장됨)" 표시.
+2. **인사이트를 실제로 쓰기.**
+   - 결과/판정 화면에 "인사이트로 저장" → AI 초안 → 사용자 승인 → `insights(id)`에 저장(`Insight` 타입).
+   - `/api/generate-matrix`, `/api/generate-brief` 요청에 해당 제품의 `status: "active"` 인사이트를 근거 먼저 포함.
+3. **근거/가설 판정은 코드가 한다.**
+   - 지금은 AI가 `type: "근거" | "가설"`을 스스로 고른다 → 출처 없는 "근거"가 생길 수 있다.
+   - AI에게는 행마다 사용한 출처 id(리뷰 분석 날짜, 키워드, 결과 id, 인사이트 id)를 함께 내게 하고, **확인 가능한 출처가 1개 이상일 때만 코드에서 "근거"**로 표시. 나머지는 "가설".
+4. 작은 것: `middleware.ts`의 공개 경로 `"/api/hermes"`가 `startsWith`라서 `/api/hermes-context`도 통과한다. 이 라우트는 `HERMES_TOKEN`이 비어 있으면 인증 없이 열린다 → 토큰이 없으면 401을 반환하도록 바꾼다.
+
+## 8. 작업 방식 메모
 - 사용자는 비개발자 마케터다. 전문 용어는 처음 나올 때 쉬운 말로 풀어 설명한다.
 - 큰 재작성보다 부분 수정, 단계별 확인을 선호한다.
 - main 브랜치에 바로 푸시하지 말고 작업 브랜치 → PR로 진행한다.
