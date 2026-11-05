@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { getProduct } from "@/config/products";
 import { BrandProfile } from "@/types";
-import type { CreativeFormat } from "@/lib/store";
+import type { CreativeFormat, Creative } from "@/lib/store";
+import { serverPrepend, serverList } from "@/lib/storeClient";
 
 const FORMAT_OPTIONS: { value: CreativeFormat; label: string }[] = [
   { value: "DA",    label: "DA (이미지/배너)" },
@@ -29,6 +30,7 @@ interface Props {
 }
 
 const BRIEF_KEY = "creative_brief";
+const creativesKey = (id: string) => `product:${id}:creatives`;
 
 function loadApprovedRows(productId: string): MatrixRow[] {
   try {
@@ -66,10 +68,13 @@ export default function CreativeBriefSection({ productId }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<"idle" | "ok" | "fail">("idle");
+  const [savedCount, setSavedCount] = useState(0);
 
   useEffect(() => {
     setApprovedRows(loadApprovedRows(productId));
     setBrief(loadSavedBrief(productId));
+    serverList<Creative>(creativesKey(productId), 100).then((list) => setSavedCount(list.length));
   }, [productId]);
 
   const generate = async () => {
@@ -79,6 +84,7 @@ export default function CreativeBriefSection({ productId }: Props) {
     }
     setLoading(true);
     setError("");
+    setSaveStatus("idle");
     try {
       const brand = loadBrandProfile();
       const res = await fetch("/api/generate-brief", {
@@ -94,10 +100,26 @@ export default function CreativeBriefSection({ productId }: Props) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "생성 실패");
-      setBrief(data.brief);
-      try {
-        localStorage.setItem(`${BRIEF_KEY}_${productId}`, data.brief);
-      } catch {}
+      const briefText: string = data.brief;
+      setBrief(briefText);
+      try { localStorage.setItem(`${BRIEF_KEY}_${productId}`, briefText); } catch {}
+
+      // creatives 리스트에 저장 (Creative 타입)
+      const creative: Creative = {
+        id: `${productId}-${Date.now()}`,
+        productId,
+        format,
+        appeal: approvedRows.map((r) => r.appeal).join(", "),
+        target: approvedRows.map((r) => r.target).join(", "),
+        brief: briefText,
+        insightIds: [],
+        version: 1,
+        createdAt: new Date().toISOString(),
+      };
+      const ok = await serverPrepend(creativesKey(productId), creative);
+      setSaveStatus(ok ? "ok" : "fail");
+      if (ok) setSavedCount((n) => n + 1);
+      setTimeout(() => setSaveStatus("idle"), 3000);
     } catch (e) {
       setError(e instanceof Error ? e.message : "알 수 없는 오류");
     } finally {
@@ -171,7 +193,11 @@ export default function CreativeBriefSection({ productId }: Props) {
         <div className="mb-4 px-4 py-3 rounded-lg text-sm" style={{ background: "#fee", color: "#c00" }}>{error}</div>
       )}
 
-      <div className="flex gap-2 mb-6">
+      {savedCount > 0 && (
+        <p className="mb-2 text-xs" style={{ color: "var(--fg-3)" }}>서버에 저장된 요청서 {savedCount}건</p>
+      )}
+
+      <div className="flex gap-2 mb-2">
         <button
           onClick={generate}
           disabled={loading || approvedRows.length === 0}
@@ -190,6 +216,13 @@ export default function CreativeBriefSection({ productId }: Props) {
           </button>
         )}
       </div>
+
+      {/* 저장 상태 */}
+      {saveStatus !== "idle" && (
+        <p className="mb-3 text-xs" style={{ color: saveStatus === "fail" ? "#b91c1c" : "var(--fg-3)" }}>
+          {saveStatus === "ok" ? "✓ 서버 저장 완료" : "⚠️ 이 브라우저에만 저장됐어요 (서버 저장 실패)"}
+        </p>
+      )}
 
       {/* 요청서 본문 */}
       {brief && (
