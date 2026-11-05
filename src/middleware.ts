@@ -5,7 +5,8 @@ const COOKIE_NAME = "dashboard_auth";
 const LOGIN_PATH = "/login";
 
 // 인증 없이 접근 가능한 경로
-const PUBLIC_PATHS = [LOGIN_PATH, "/api/auth/login"];
+// /api/hermes/* 는 라우트 내부에서 x-hermes-token으로 인증하므로 middleware는 통과
+const PUBLIC_PATHS = [LOGIN_PATH, "/api/auth/login", "/api/hermes"];
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
