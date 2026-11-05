@@ -54,7 +54,15 @@ const RESEARCH_LABELS: Record<string, string> = {
   customer:   "고객 반응",
 };
 
-export async function GET() {
+export async function GET(req: Request) {
+  const token = process.env.HERMES_TOKEN;
+  if (token) {
+    const auth = req.headers.get("x-hermes-token") ?? req.headers.get("authorization")?.replace("Bearer ", "");
+    if (auth !== token) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+  }
+
   try {
     const [brand, market, competitor, customer] = await Promise.all([
       kv.get<BrandProfile>("brand_profile"),
