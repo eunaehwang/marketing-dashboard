@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
-  const { productId, productName, approvedRows, brandProfile } = await req.json();
+  const { productId, productName, approvedRows, brandProfile, format = "DA" } = await req.json();
 
   if (!approvedRows?.length) {
     return NextResponse.json({ error: "O 판정된 행이 없습니다." }, { status: 400 });
@@ -63,5 +63,5 @@ ${rowText}
   const data = await res.json();
   const brief = data.content?.[0]?.text ?? "";
 
-  return NextResponse.json({ ok: true, brief, productId });
+  return NextResponse.json({ ok: true, brief, productId, format });
 }

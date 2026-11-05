@@ -3,6 +3,15 @@
 import { useState, useEffect } from "react";
 import { getProduct } from "@/config/products";
 import { BrandProfile } from "@/types";
+import type { CreativeFormat } from "@/lib/store";
+
+const FORMAT_OPTIONS: { value: CreativeFormat; label: string }[] = [
+  { value: "DA",    label: "DA (이미지/배너)" },
+  { value: "REELS", label: "REELS (릴스·숏폼)" },
+  { value: "PA",    label: "PA (인플루언서 브리프)" },
+  { value: "PROMO", label: "PROMO (프로모션)" },
+  { value: "CRM",   label: "CRM (친구톡·문자)" },
+];
 
 interface MatrixRow {
   id: string;
@@ -53,6 +62,7 @@ export default function CreativeBriefSection({ productId }: Props) {
   const product = getProduct(productId);
   const [approvedRows, setApprovedRows] = useState<MatrixRow[]>([]);
   const [brief, setBrief] = useState(() => loadSavedBrief(productId));
+  const [format, setFormat] = useState<CreativeFormat>("DA");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
@@ -79,6 +89,7 @@ export default function CreativeBriefSection({ productId }: Props) {
           productName: product?.name,
           approvedRows,
           brandProfile: brand ? { toneKeywords: brand.toneKeywords, doNotList: brand.doNotList } : null,
+          format,
         }),
       });
       const data = await res.json();
@@ -111,6 +122,26 @@ export default function CreativeBriefSection({ productId }: Props) {
         <p className="text-sm mt-1" style={{ color: "var(--fg-3)" }}>
           {product?.name ?? productId} · O 판정 조합으로 광고작업실 브리프를 생성합니다.
         </p>
+      </div>
+
+      {/* 형식 선택 */}
+      <div className="mb-5">
+        <label className="block text-xs font-semibold mb-1.5" style={{ color: "var(--fg-2)" }}>실행물 형식</label>
+        <div className="flex flex-wrap gap-2">
+          {FORMAT_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => setFormat(opt.value)}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+              style={{
+                background: format === opt.value ? "var(--accent)" : "var(--surface-2)",
+                color: format === opt.value ? "#fff" : "var(--fg-3)",
+              }}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* O 판정 행 미리보기 */}
