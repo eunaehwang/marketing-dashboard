@@ -70,6 +70,11 @@
 - [ ] 저장소 레이어 `src/lib/store.ts`: Redis 키를 `product:{id}:{stage}` 형태로 통일, 판정·결과는 리스트로 누적(이력 보존).
 - [ ] localStorage 사용 부분을 store API(`/api/store`)로 교체. 기존 localStorage 데이터는 1회 마이그레이션 버튼으로 서버에 올린다.
 - [ ] `BrandProfile` 필드명 통일(3번 진단), README 환경변수 표 수정.
+- [ ] **저장 실패를 화면에 표시.** 지금 `BrandSection.handleSave`, `AdResearchTab`의 `/api/save-*` 호출은 `.catch(() => {})`로 오류를 버리고 `res.ok`도 확인하지 않는다 → 서버 저장이 실패해도 "저장됨"으로 보인다.
+  응답을 확인해서 "서버 저장 완료 / 서버 저장 실패(이 브라우저에만 저장됨)"를 구분해 표시하고, `/api/store`로 옮길 때도 같은 규칙을 적용한다.
+- [ ] `/api/health`에 Upstash 연결 여부(`upstash: true/false`) 추가.
+
+> 운영 메모 (2026-11-05): Upstash는 Vercel 마켓플레이스가 아닌 upstash.com 무료 플랜으로 직접 생성(us-east-1), Vercel에 `UPSTASH_REDIS_REST_URL`/`UPSTASH_REDIS_REST_TOKEN` 수동 입력. Production에서 `brand_profile` 저장 확인 완료.
 
 ### 2단계 — 흐름 UI (MVP: 올샌딩 한 제품)
 - [ ] 사이드바를 단계 흐름(0~6)으로 재구성. 기존 섹션 컴포넌트는 삭제하지 말고 각 단계 안으로 옮겨 재사용.
