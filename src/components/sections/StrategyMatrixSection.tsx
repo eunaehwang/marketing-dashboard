@@ -147,8 +147,13 @@ export default function StrategyMatrixSection({ productId }: Props) {
     setReasonInput("");
   };
 
-  const confirmVerdict = async (reason: string) => {
-    if (!editingVerdict || !reason.trim()) return;
+  // X는 이유 필수, O는 이유 선택
+  const canConfirm = (verdict: "O" | "X", reason: string) => verdict === "O" || reason.trim().length > 0;
+
+  const confirmVerdict = async (rawReason: string) => {
+    if (!editingVerdict) return;
+    const reason = rawReason.trim();
+    if (!canConfirm(editingVerdict.verdict, reason)) return;
     const { id, verdict } = editingVerdict;
     const row = rows.find((r) => r.id === id);
     setRows((prev) => {
@@ -353,15 +358,15 @@ export default function StrategyMatrixSection({ productId }: Props) {
                 </div>
               </div>
 
-              {/* O·X 모두 이유 입력 */}
+              {/* 이유 입력: X는 필수, O는 선택 */}
               {editingVerdict?.id === row.id && (
                 <div className="mt-3 pl-11">
                   <input
                     autoFocus
                     value={reasonInput}
                     onChange={(e) => setReasonInput(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === "Enter" && reasonInput.trim()) confirmVerdict(reasonInput.trim()); }}
-                    placeholder={editingVerdict.verdict === "O" ? "O 판정 이유 (필수, Enter 확인)" : "X 판정 이유 (필수, Enter 확인)"}
+                    onKeyDown={(e) => { if (e.key === "Enter" && canConfirm(editingVerdict.verdict, reasonInput)) confirmVerdict(reasonInput); }}
+                    placeholder={editingVerdict.verdict === "O" ? "O 판정 이유 (선택, 비워두고 Enter 가능)" : "X 판정 이유 (필수, Enter 확인)"}
                     className="w-full px-3 py-2 rounded-lg border text-sm"
                     style={{
                       background: "var(--surface-2)",
@@ -371,9 +376,14 @@ export default function StrategyMatrixSection({ productId }: Props) {
                   />
                   <div className="flex gap-2 mt-1.5">
                     <button
-                      onClick={() => reasonInput.trim() && confirmVerdict(reasonInput.trim())}
+                      onClick={() => confirmVerdict(reasonInput)}
+                      disabled={!canConfirm(editingVerdict.verdict, reasonInput)}
                       className="px-3 py-1.5 rounded-lg text-xs font-medium"
-                      style={{ background: editingVerdict.verdict === "O" ? "var(--accent)" : "#6b7280", color: "#fff" }}
+                      style={{
+                        background: editingVerdict.verdict === "O" ? "var(--accent)" : "#6b7280",
+                        color: "#fff",
+                        opacity: canConfirm(editingVerdict.verdict, reasonInput) ? 1 : 0.5,
+                      }}
                     >확인</button>
                     <button
                       onClick={() => setEditingVerdict(null)}
