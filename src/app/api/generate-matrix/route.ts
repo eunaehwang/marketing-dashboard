@@ -1,14 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { callClaude, parseJson } from "@/lib/anthropic";
 
 export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
   const { productId, productName, reviewInsight, keywords } = await req.json();
-
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    return NextResponse.json({ error: "ANTHROPIC_API_KEY가 설정되지 않았습니다." }, { status: 500 });
-  }
 
   const system = `당신은 한국 D2C 퍼포먼스 마케팅 전략가입니다.
 소구(USP) × 타겟 조합의 가설 매트릭스를 만듭니다.
@@ -40,35 +36,20 @@ JSON 형식:
 
 8~12개 행 작성. appeal과 target은 구체적으로.`;
 
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "claude-haiku-5-5",
-      max_tokens: 3000,
-      system,
-      messages: [{ role: "user", content: userPrompt }],
-    }),
+  const result = await callClaude({
+    max_tokens: 6000,
+    system,
+    messages: [{ role: "user", content: userPrompt }],
   });
 
-  if (!res.ok) {
-    const err = await res.text();
-    return NextResponse.json({ error: `Claude API 오류: ${err}` }, { status: 500 });
+  if (!result.ok) {
+    return NextResponse.json({ error: result.error }, { status: result.status });
   }
 
-  const data = await res.json();
-  const raw = data.content?.[0]?.text ?? "";
-
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(raw);
-  } catch {
-    return NextResponse.json({ error: "응답 파싱 실패", raw }, { status: 500 });
+  const parsed = parseJson(result.text);
+  if (!parsed.ok) {
+    return NextResponse.json({ error: parsed.error }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true, matrix: parsed, productId });
+  return NextResponse.json({ ok: true, matrix: parsed.data, productId });
 }

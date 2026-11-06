@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { callClaude } from "@/lib/anthropic";
 
 export const maxDuration = 60;
 
@@ -7,11 +8,6 @@ export async function POST(req: NextRequest) {
 
   if (!approvedRows?.length) {
     return NextResponse.json({ error: "O 판정된 행이 없습니다." }, { status: 400 });
-  }
-
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    return NextResponse.json({ error: "ANTHROPIC_API_KEY가 설정되지 않았습니다." }, { status: 500 });
   }
 
   const system = `당신은 한국 D2C 광고 제작 PD입니다.
@@ -40,28 +36,15 @@ ${rowText}
 **소재 형태:** 영상 15s / 이미지 / 카드뉴스 중 추천 형태
 **주의:** (있으면 작성)`;
 
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "claude-haiku-5-5",
-      max_tokens: 3000,
-      system,
-      messages: [{ role: "user", content: userPrompt }],
-    }),
+  const result = await callClaude({
+    max_tokens: 6000,
+    system,
+    messages: [{ role: "user", content: userPrompt }],
   });
 
-  if (!res.ok) {
-    const err = await res.text();
-    return NextResponse.json({ error: `Claude API 오류: ${err}` }, { status: 500 });
+  if (!result.ok) {
+    return NextResponse.json({ error: result.error }, { status: result.status });
   }
 
-  const data = await res.json();
-  const brief = data.content?.[0]?.text ?? "";
-
-  return NextResponse.json({ ok: true, brief, productId, format });
+  return NextResponse.json({ ok: true, brief: result.text, productId, format });
 }
