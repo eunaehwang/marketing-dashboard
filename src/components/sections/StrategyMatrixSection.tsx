@@ -147,8 +147,9 @@ export default function StrategyMatrixSection({ productId }: Props) {
     setReasonInput("");
   };
 
-  // X는 이유 필수, O는 이유 선택
-  const canConfirm = (verdict: "O" | "X", reason: string) => verdict === "O" || reason.trim().length > 0;
+  // O·X 모두 이유는 선택 (2026-11-06 사용자 결정). 이유를 적으면 다음 기획에 반영된다.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const canConfirm = (_verdict: "O" | "X", _reason: string) => true;
 
   const confirmVerdict = async (rawReason: string) => {
     if (!editingVerdict) return;
@@ -358,7 +359,7 @@ export default function StrategyMatrixSection({ productId }: Props) {
                 </div>
               </div>
 
-              {/* 이유 입력: X는 필수, O는 선택 */}
+              {/* 이유 입력: O·X 모두 선택 */}
               {editingVerdict?.id === row.id && (
                 <div className="mt-3 pl-11">
                   <input
@@ -366,7 +367,7 @@ export default function StrategyMatrixSection({ productId }: Props) {
                     value={reasonInput}
                     onChange={(e) => setReasonInput(e.target.value)}
                     onKeyDown={(e) => { if (e.key === "Enter" && canConfirm(editingVerdict.verdict, reasonInput)) confirmVerdict(reasonInput); }}
-                    placeholder={editingVerdict.verdict === "O" ? "O 판정 이유 (선택, 비워두고 Enter 가능)" : "X 판정 이유 (필수, Enter 확인)"}
+                    placeholder={editingVerdict.verdict === "O" ? "O 판정 이유 (선택, 비워두고 Enter 가능)" : "X 판정 이유 (선택, 적어두면 다음 제안에서 같은 실수를 줄여요)"}
                     className="w-full px-3 py-2 rounded-lg border text-sm"
                     style={{
                       background: "var(--surface-2)",
