@@ -8,37 +8,28 @@ import { Redis } from "@upstash/redis";
 
 let _redis: Redis | null = null;
 
-function getRedis(): Redis | null {
-  if (_redis) return _redis;
+function getRedis(): Redis {
   if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
-    return null;
+    throw new Error("REDIS_NOT_CONFIGURED");
   }
-  _redis = Redis.fromEnv();
+  if (!_redis) _redis = Redis.fromEnv();
   return _redis;
 }
 
 export async function storeSet(key: string, value: unknown): Promise<void> {
-  const r = getRedis();
-  if (!r) return;
-  await r.set(key, value);
+  await getRedis().set(key, value);
 }
 
 export async function storeGet<T>(key: string): Promise<T | null> {
-  const r = getRedis();
-  if (!r) return null;
-  return r.get<T>(key);
+  return getRedis().get<T>(key);
 }
 
 export async function storePrepend(key: string, value: unknown): Promise<void> {
-  const r = getRedis();
-  if (!r) return;
-  await r.lpush(key, value);
+  await getRedis().lpush(key, value);
 }
 
 export async function storeList<T>(key: string, limit = 50): Promise<T[]> {
-  const r = getRedis();
-  if (!r) return [];
-  return r.lrange<T>(key, 0, limit - 1);
+  return getRedis().lrange<T>(key, 0, limit - 1);
 }
 
 // ─── 키 헬퍼 ────────────────────────────────────────────────────────────────

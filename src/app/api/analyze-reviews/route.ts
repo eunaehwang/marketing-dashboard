@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { callClaude, parseJson } from "@/lib/anthropic";
 
 export const maxDuration = 60;
 
@@ -7,11 +8,6 @@ export async function POST(req: NextRequest) {
 
   if (!reviews || typeof reviews !== "string" || reviews.trim().length < 10) {
     return NextResponse.json({ error: "리뷰 텍스트가 필요합니다." }, { status: 400 });
-  }
-
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    return NextResponse.json({ error: "ANTHROPIC_API_KEY가 설정되지 않았습니다." }, { status: 500 });
   }
 
   const system = `당신은 한국 D2C 브랜드의 광고 기획자입니다.
@@ -37,35 +33,20 @@ ${reviews.slice(0, 8000)}
 
 각 항목은 최소 3개, 최대 8개. buyReasons와 hesitations는 광고 소구점 관점에서 작성.`;
 
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "claude-haiku-5-5",
-      max_tokens: 2000,
-      system,
-      messages: [{ role: "user", content: userPrompt }],
-    }),
+  const result = await callClaude({
+    max_tokens: 2000,
+    system,
+    messages: [{ role: "user", content: userPrompt }],
   });
 
-  if (!res.ok) {
-    const err = await res.text();
-    return NextResponse.json({ error: `Claude API 오류: ${err}` }, { status: 500 });
+  if (!result.ok) {
+    return NextResponse.json({ error: result.error }, { status: result.status });
   }
 
-  const data = await res.json();
-  const raw = data.content?.[0]?.text ?? "";
-
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(raw);
-  } catch {
-    return NextResponse.json({ error: "응답 파싱 실패", raw }, { status: 500 });
+  const parsed = parseJson(result.text);
+  if (!parsed.ok) {
+    return NextResponse.json({ error: parsed.error }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true, result: parsed, productId });
+  return NextResponse.json({ ok: true, result: parsed.data, productId });
 }
