@@ -35,7 +35,11 @@ function toNum(v: number | string): number {
   return parseInt(String(v).replace(/,/g, "")) || 0;
 }
 
-export default function KeywordSection() {
+interface Props {
+  productId: string;
+}
+
+export default function KeywordSection({ productId }: Props) {
   const [items, setItems] = useState<DisplayItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -97,6 +101,20 @@ export default function KeywordSection() {
       setCachedAt(now);
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify({ savedAt: now, items: deduped }));
+      } catch {}
+
+      // 서버 저장 (product:{id}:market)
+      try {
+        const snapshot = {
+          snapshotId: `mkt-${Date.now()}`,
+          savedAt: now,
+          keywords: deduped.map(({ keyword, pc, mobile, total }) => ({ keyword, pc, mobile, total })),
+        };
+        await fetch("/api/store", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ op: "prepend", key: `product:${productId}:market`, value: snapshot }),
+        });
       } catch {}
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : String(err));

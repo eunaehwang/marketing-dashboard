@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { getProduct } from "@/config/products";
 import BasisBadge from "@/components/ui/BasisBadge";
+import InsightSaveButton from "@/components/ui/InsightSaveButton";
 import { serverPrepend, serverList } from "@/lib/storeClient";
 
 interface ReviewResult {
@@ -209,6 +210,16 @@ export default function ReviewAnalysisSection({ productId }: Props) {
               <BasisBadge basis="근거" />
             </div>
             <p className="text-sm font-medium" style={{ color: "var(--fg)" }}>{result.topInsight}</p>
+            <div className="mt-2">
+              <InsightSaveButton
+                productId={productId}
+                defaultText={result.topInsight}
+                defaultBasis="근거"
+                sourceType="review"
+                sourceRef={new Date().toISOString().split("T")[0]}
+                triggerLabel="인사이트로 저장"
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

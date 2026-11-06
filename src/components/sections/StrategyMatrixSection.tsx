@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { getProduct } from "@/config/products";
 import BasisBadge from "@/components/ui/BasisBadge";
+import InsightSaveButton from "@/components/ui/InsightSaveButton";
 import { serverGet, serverSet, serverPrepend, serverList } from "@/lib/storeClient";
 
 interface MatrixRow {
@@ -14,6 +15,12 @@ interface MatrixRow {
   type: "근거" | "가설";
   verdict: "O" | "X" | null;
   reason?: string;
+  sources?: string[];
+}
+
+interface ContextSummary {
+  used: { sourceId: string; label: string }[];
+  missing: { label: string }[];
 }
 
 interface VerdictRecord {
@@ -35,25 +42,13 @@ interface Props { productId: string; }
 const matrixKey    = (id: string) => `product:${id}:matrix`;
 const verdictsKey  = (id: string) => `product:${id}:verdicts`;
 const historyKey   = (id: string) => `product:${id}:matrix_history`;
-const customerKey  = (id: string) => `product:${id}:customer`;
 const LS_KEY       = (id: string) => `strategy_matrix_${id}`;
-const LS_REVIEW    = (id: string) => `review_analysis_${id}`;
 
 function lsLoad(productId: string): MatrixRow[] {
   try { const r = localStorage.getItem(LS_KEY(productId)); return r ? JSON.parse(r) : []; } catch { return []; }
 }
 function lsSave(productId: string, rows: MatrixRow[]) {
   try { localStorage.setItem(LS_KEY(productId), JSON.stringify(rows)); } catch {}
-}
-
-async function loadReviewInsight(productId: string): Promise<string> {
-  // 서버 우선, 없으면 localStorage 폴백
-  const result = await serverList<{ topInsight?: string }>(customerKey(productId), 1);
-  if (result.ok && result.data[0]?.topInsight) return result.data[0].topInsight;
-  try {
-    const r = localStorage.getItem(LS_REVIEW(productId));
-    return r ? (JSON.parse(r).topInsight ?? "") : "";
-  } catch { return ""; }
 }
 
 export default function StrategyMatrixSection({ productId }: Props) {
@@ -70,6 +65,7 @@ export default function StrategyMatrixSection({ productId }: Props) {
   const [history, setHistory] = useState<MatrixSnapshot[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [verdictCount, setVerdictCount] = useState(0);
+  const [contextSummary, setContextSummary] = useState<ContextSummary | null>(null);
 
   // 초기 로드
   useEffect(() => {
@@ -124,14 +120,14 @@ export default function StrategyMatrixSection({ productId }: Props) {
         setHistory((prev) => [snapshot, ...prev.slice(0, 9)]);
       }
 
-      const insight = await loadReviewInsight(productId);
       const res = await fetch("/api/generate-matrix", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId, productName: product?.name, reviewInsight: insight, keywords: product?.keywords }),
+        body: JSON.stringify({ productId }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "생성 실패");
+      if (data.contextSummary) setContextSummary(data.contextSummary);
       const newRows: MatrixRow[] = (data.matrix?.rows ?? []).map((r: MatrixRow) => ({ ...r, verdict: null }));
       setRows(newRows);
       await persistRows(newRows);
@@ -276,6 +272,31 @@ export default function StrategyMatrixSection({ productId }: Props) {
 
       {error && <div className="mb-4 px-4 py-3 rounded-lg text-sm" style={{ background: "#fee", color: "#c00" }}>{error}</div>}
 
+      {/* 데이터 사용 현황 배너 */}
+      {contextSummary && (
+        <div className="mb-5 p-3 rounded-xl border text-xs" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+          <div className="font-semibold mb-2 uppercase tracking-widest" style={{ color: "var(--fg-3)", fontSize: "10px" }}>이번 매트릭스 생성에 쓴 데이터</div>
+          {contextSummary.used.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-1.5">
+              {contextSummary.used.map((u) => (
+                <span key={u.sourceId} className="px-2 py-0.5 rounded-full" style={{ background: "var(--accent-light)", color: "var(--accent)" }}>
+                  ✓ {u.label}
+                </span>
+              ))}
+            </div>
+          )}
+          {contextSummary.missing.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {contextSummary.missing.map((m, i) => (
+                <span key={i} className="px-2 py-0.5 rounded-full" style={{ background: "var(--surface-2)", color: "var(--fg-3)" }}>
+                  ✗ {m.label}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* 이전 버전 목록 */}
       {showHistory && history.length > 0 && (
         <div className="mb-5 space-y-2">
@@ -348,6 +369,18 @@ export default function StrategyMatrixSection({ productId }: Props) {
                       }}
                     >
                       판정 이유: {row.reason}
+                    </div>
+                  )}
+                  {row.verdict === "O" && row.reason && (
+                    <div className="mt-1.5">
+                      <InsightSaveButton
+                        productId={productId}
+                        defaultText={`[O판정] ${row.appeal} → ${row.target}: ${row.reason}`}
+                        defaultBasis="근거"
+                        sourceType="verdict"
+                        sourceRef={row.id}
+                        triggerLabel="인사이트로 저장"
+                      />
                     </div>
                   )}
                 </div>

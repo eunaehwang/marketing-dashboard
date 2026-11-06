@@ -196,12 +196,41 @@ PR #2(0~2.5단계 + UI 정리)는 머지 가능 상태로 점검 완료(타입 �
    - `/api/store` (또는 기능별 라우트)를 만들어 `keys.*`로 읽고 쓴다: 리뷰 분석 → `productStage(id, "customer")`(날짜별 누적), 매트릭스 → `productStage(id, "matrix")`, 판정 → `verdicts(id)` 리스트 누적, 요청서 → `creatives(id)` 리스트(`Creative` 타입 그대로, `format` 포함).
    - 기존 localStorage 데이터는 "서버로 옮기기" 버튼으로 1회 업로드. 이후 localStorage는 쓰지 않거나 임시 캐시로만.
    - 저장 실패 시 기존 규칙대로 "서버 저장 실패(이 브라우저에만 저장됨)" 표시.
-2. **인사이트를 실제로 쓰기.**
-   - 결과/판정 화면에 "인사이트로 저장" → AI 초안 → 사용자 승인 → `insights(id)`에 저장(`Insight` 타입).
-   - `/api/generate-matrix`, `/api/generate-brief` 요청에 해당 제품의 `status: "active"` 인사이트를 근거 먼저 포함.
-3. **근거/가설 판정은 코드가 한다.**
-   - 지금은 AI가 `type: "근거" | "가설"`을 스스로 고른다 → 출처 없는 "근거"가 생길 수 있다.
-   - AI에게는 행마다 사용한 출처 id(리뷰 분석 날짜, 키워드, 결과 id, 인사이트 id)를 함께 내게 하고, **확인 가능한 출처가 1개 이상일 때만 코드에서 "근거"**로 표시. 나머지는 "가설".
+2. **인사이트를 실제로 쓰기.** ✅ (handoff/matrix-evidence에서 구현)
+   - 고객 분석 핵심 인사이트 카드, O판정 행 판정 이유에 "인사이트로 저장" 버튼 추가.
+   - 클릭 → 텍스트·근거/가설 선택 → 저장 → `product:{id}:insights` prepend(`Insight` 타입).
+   - 저장된 인사이트는 `generate-matrix`가 서버에서 직접 읽어 프롬프트에 포함 (active 인사이트만).
+3. **근거/가설 판정은 코드가 한다.** ✅ (handoff/matrix-evidence에서 구현)
+   - AI에게 `type` 필드 없이 `sources: string[]` (사용한 출처 ID 목록)만 반환하게 함.
+   - 서버가 각 sourceId를 실제 수집된 데이터 ID와 대조: 확인 가능한 출처 ≥1개 → `"근거"`, 없으면 `"가설"`.
+   - 광고 리서치 출처(`adresearch_*`)는 검증 불가이므로 가설 전용(근거로 미인정).
+   - 행 정렬: 근거 행 먼저, 최대 8개.
+
+   **출처 ID 체계 (generate-matrix가 수집하는 데이터 종류):**
+   | sourceId 형식 | 데이터 | 근거 인정 |
+   |---|---|---|
+   | `product_config` | `products.ts` keyMessage·targetHints | ✅ |
+   | `brand` | 브랜드 프로필 (`brand_profile` 키) | ✅ |
+   | `customer_{YYYY-MM-DD}` | 고객 분석 최신 1건 (`product:{id}:customer`) | ✅ |
+   | `mkt-{timestamp}` or `market_{date}` | 키워드 분석 최신 1건 (`product:{id}:market`) | ✅ |
+   | `adresearch_{date}` | 광고 리서치 (`research_market`) | ❌ (가설만) |
+   | `verdict_{rowId}` | 판정 이력 각 건 (`product:{id}:verdicts`) | ✅ |
+   | `ins-{timestamp}` | 인사이트 각 건 (`product:{id}:insights`) | ✅ |
+
+4. **시장 데이터 서버 저장.** ✅ (handoff/matrix-evidence에서 구현)
+   - `KeywordSection`이 키워드 조회 완료 후 `product:{id}:market`에 prepend.
+   - 스냅샷 형식: `{ snapshotId: "mkt-{timestamp}", savedAt, keywords: [{keyword, pc, mobile, total}] }`.
+   - `MarketSection`이 `productId`를 `KeywordSection`에 prop으로 전달.
+5. **컨텍스트 배너.** ✅ (handoff/matrix-evidence에서 구현)
+   - 매트릭스 위에 "이번에 쓴 데이터 / 비어 있는 데이터" 표시.
+   - `generate-matrix`가 `contextSummary: { used[], missing[] }`를 반환, `StrategyMatrixSection`이 렌더링.
+
+   **미완 / 후속 작업:**
+   - `generate-brief`도 서버에서 컨텍스트 직접 수집으로 전환 (현재 클라이언트가 O판정 행만 넘김).
+   - `TrendSection`에도 `productId` prop 추가 (현재 하드코딩, 실제 Naver 데이터랩 연동 시 필요).
+   - `AdResearchTab` 저장 형식을 `product:{id}:market` 계열로 통합 고려 (현재 `research_market` 단일 키 덮어쓰기).
+   - 판정 이력에서도 "인사이트로 저장" 버튼 (X판정 포함).
+   - `generate-brief`에 active 인사이트 포함.
 4. 작은 것: `middleware.ts`의 공개 경로 `"/api/hermes"`가 `startsWith`라서 `/api/hermes-context`도 통과한다. 이 라우트는 `HERMES_TOKEN`이 비어 있으면 인증 없이 열린다 → 토큰이 없으면 401을 반환하도록 바꾼다.
 
 ## 8. 작업 방식 메모

@@ -53,7 +53,7 @@ export default function MarketSection({ productId }: Props) {
       </div>
 
       {/* 탭 내용 */}
-      {tab === "keyword"    && <KeywordSection />}
+      {tab === "keyword"    && <KeywordSection productId={productId} />}
       {tab === "trend"      && <TrendSection />}
       {tab === "adresearch" && <AdResearchTab />}
     </div>
